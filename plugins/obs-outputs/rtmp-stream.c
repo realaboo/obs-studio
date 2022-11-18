@@ -796,7 +796,8 @@ static bool send_audio_header(struct rtmp_stream *stream, size_t idx,
 	uint8_t *header;
 
 	struct encoder_packet packet = {.type = OBS_ENCODER_AUDIO,
-					.timebase_den = 1};
+					.timebase_den = 1,
+					.encoder = aencoder};
 
 	if (!aencoder) {
 		*next = false;
@@ -817,11 +818,15 @@ static bool send_video_header(struct rtmp_stream *stream)
 	size_t size;
 
 	struct encoder_packet packet = {
-		.type = OBS_ENCODER_VIDEO, .timebase_den = 1, .keyframe = true};
+		.type = OBS_ENCODER_VIDEO, .timebase_den = 1, .keyframe = true, .encoder = vencoder};
 
 	if (!obs_encoder_get_extra_data(vencoder, &header, &size))
 		return false;
-	packet.size = obs_parse_avc_header(&packet.data, header, size);
+	if (strcmp(obs_encoder_get_codec(vencoder), "hevc") == 0) {
+		packet.size = obs_parse_hevc_header(&packet.data, header, size);
+	} else {
+		packet.size = obs_parse_avc_header(&packet.data, header, size);
+	}
 	return send_packet(stream, &packet, true, 0) >= 0;
 }
 
@@ -1532,7 +1537,12 @@ static void rtmp_stream_data(void *data, struct encoder_packet *packet)
 			stream->got_first_video = true;
 		}
 
-		obs_parse_avc_packet(&new_packet, packet);
+		if (strcmp(obs_encoder_get_codec(obs_output_get_video_encoder(
+				   stream->output)), "hevc") == 0) {
+			obs_parse_hevc_packet(&new_packet, packet);
+		} else {
+			obs_parse_avc_packet(&new_packet, packet);
+		}
 	} else {
 		obs_encoder_packet_ref(&new_packet, packet);
 	}
@@ -1631,7 +1641,7 @@ struct obs_output_info rtmp_output_info = {
 	.id = "rtmp_output",
 	.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED | OBS_OUTPUT_SERVICE |
 		 OBS_OUTPUT_MULTI_TRACK,
-	.encoded_video_codecs = "h264",
+	.encoded_video_codecs = "h264;hevc",
 	.encoded_audio_codecs = "aac",
 	.get_name = rtmp_stream_getname,
 	.create = rtmp_stream_create,

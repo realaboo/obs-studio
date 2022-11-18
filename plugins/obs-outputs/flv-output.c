@@ -117,7 +117,9 @@ static void write_audio_header(struct flv_output *stream)
 	obs_encoder_t *aencoder = obs_output_get_audio_encoder(context, 0);
 
 	struct encoder_packet packet = {.type = OBS_ENCODER_AUDIO,
-					.timebase_den = 1};
+					.timebase_den = 1,
+					.keyframe = true,
+					.encoder = aencoder};
 
 	if (!obs_encoder_get_extra_data(aencoder, &packet.data, &packet.size))
 		return;
@@ -132,7 +134,7 @@ static void write_video_header(struct flv_output *stream)
 	size_t size;
 
 	struct encoder_packet packet = {
-		.type = OBS_ENCODER_VIDEO, .timebase_den = 1, .keyframe = true};
+		.type = OBS_ENCODER_VIDEO, .timebase_den = 1, .keyframe = true, .encoder = vencoder};
 
 	if (!obs_encoder_get_extra_data(vencoder, &header, &size))
 		return;
@@ -269,7 +271,7 @@ static obs_properties_t *flv_output_properties(void *unused)
 struct obs_output_info flv_output_info = {
 	.id = "flv_output",
 	.flags = OBS_OUTPUT_AV | OBS_OUTPUT_ENCODED,
-	.encoded_video_codecs = "h264",
+	.encoded_video_codecs = "h264;hevc",
 	.encoded_audio_codecs = "aac",
 	.get_name = flv_output_getname,
 	.create = flv_output_create,

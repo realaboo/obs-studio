@@ -29,6 +29,7 @@ EXPORT bool obs_hevc_keyframe(const uint8_t *data, size_t size);
 EXPORT void obs_parse_hevc_packet(struct encoder_packet *hevc_packet,
 				  const struct encoder_packet *src);
 EXPORT int obs_parse_hevc_packet_priority(const struct encoder_packet *packet);
+EXPORT size_t obs_parse_hevc_header(uint8_t **header, const uint8_t *data, size_t size);
 EXPORT void obs_extract_hevc_headers(const uint8_t *packet, size_t size,
 				     uint8_t **new_packet_data,
 				     size_t *new_packet_size,

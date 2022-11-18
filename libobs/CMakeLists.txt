@@ -184,6 +184,8 @@ target_sources(
           util/dstr.h
           util/file-serializer.c
           util/file-serializer.h
+          util/golomb.h
+          util/golomb.c
           util/lexer.c
           util/lexer.h
           util/platform.c

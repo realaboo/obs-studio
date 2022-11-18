@@ -1,17 +1,6 @@
-OBS Studio <https://obsproject.com>
+OBS Studio with RTMP HEVC Support
 ===================================
-
-.. image:: https://github.com/obsproject/obs-studio/actions/workflows/main.yml/badge.svg?branch=master&event=push
-   :alt: OBS Studio Build Status - GitHub Actions
-   :target: https://github.com/obsproject/obs-studio/actions/workflows/main.yml?query=event%3Apush+branch%3Amaster
-
-.. image:: https://badges.crowdin.net/obs-studio/localized.svg
-   :alt: OBS Studio Translation Project Progress
-   :target: https://crowdin.com/project/obs-studio
-
-.. image:: https://img.shields.io/discord/348973006581923840.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2
-   :alt: OBS Studio Discord Server
-   :target: https://obsproject.com/discord
+This fork adds support for RTMP HEVC streaming to OBS Studio. It can also save HEVC in flv format if working with modified ffmpeg libraries. See https://github.com/realaboo/FFmpeg.
 
 What is OBS Studio?
 -------------------

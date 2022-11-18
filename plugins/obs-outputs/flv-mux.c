@@ -31,6 +31,7 @@
 
 #define VIDEO_HEADER_SIZE 5
 #define VIDEODATA_AVCVIDEOPACKET 7.0
+#define VIDEODATA_HEVCVIDEOPACKET 12.0
 #define AUDIODATA_AAC 10.0
 
 static inline double encoder_bitrate(obs_encoder_t *encoder)
@@ -84,7 +85,10 @@ static void build_flv_meta_data(obs_output_t *context, uint8_t **output,
 	enc_num_val(&enc, end, "height",
 		    (double)obs_encoder_get_height(vencoder));
 
-	enc_num_val(&enc, end, "videocodecid", VIDEODATA_AVCVIDEOPACKET);
+	enc_num_val(&enc, end, "videocodecid",
+		    strcmp(obs_encoder_get_codec(vencoder), "hevc") == 0
+			    ? VIDEODATA_HEVCVIDEOPACKET
+			    : VIDEODATA_AVCVIDEOPACKET);
 	enc_num_val(&enc, end, "videodatarate", encoder_bitrate(vencoder));
 	enc_num_val(&enc, end, "framerate", video_output_get_frame_rate(video));
 
@@ -174,10 +178,12 @@ static void flv_video(struct serializer *s, int32_t dts_offset,
 {
 	int64_t offset = packet->pts - packet->dts;
 	int32_t time_ms = get_ms_time(packet, packet->dts) - dts_offset;
+	bool is_hevc = false;
 
 	if (!packet->data || !packet->size)
 		return;
 
+	is_hevc = strcmp(obs_encoder_get_codec(packet->encoder), "hevc") == 0;
 	s_w8(s, RTMP_PACKET_TYPE_VIDEO);
 
 #ifdef DEBUG_TIMESTAMPS
@@ -195,7 +201,7 @@ static void flv_video(struct serializer *s, int32_t dts_offset,
 	s_wb24(s, 0);
 
 	/* these are the 5 extra bytes mentioned above */
-	s_w8(s, packet->keyframe ? 0x17 : 0x27);
+	s_w8(s, packet->keyframe ? (is_hevc ? 0x1C : 0x17) : (is_hevc ? 0x2C : 0x27));
 	s_w8(s, is_header ? 0 : 1);
 	s_wb24(s, get_ms_time(packet, offset));
 	s_write(s, packet->data, packet->size);
